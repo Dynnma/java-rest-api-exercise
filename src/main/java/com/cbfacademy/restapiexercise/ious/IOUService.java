@@ -1,47 +1,37 @@
 package com.cbfacademy.restapiexercise.ious;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.stereotype.Service;
 
-public interface IOUService {
+@Service
+public class IOUService {
+    public IOURepository iouRepository;
 
-    /**
-     * Retrieve a list of all IOUs.
-     *
-     * @return A list of all IOUs.
-     */
-    List<IOU> getAllIOUs();
-
-    /**
-     * Retrieve an IOU by its ID.
-     *
-     * @param id The ID of the IOU to retrieve.
-     * @return The IOU with the specified ID, or null if not found.
-     */
-    IOU getIOU(UUID id);
-
-    /**
-     * Create a new IOU.
-     *
-     * @param iou The IOU object to create.
-     * @return The created IOU.
-     */
-    IOU createIOU(IOU iou);
-
-    /**
-     * Update an existing IOU by its ID.
-     *
-     * @param id         The ID of the IOU to update.
-     * @param updatedIOU The updated IOU object.
-     * @return The updated IOU, or null if the ID is not found.
-     */
-    IOU updateIOU(UUID id, IOU updatedIOU);
-
-    /**
-     * Delete an IOU by its ID.
-     *
-     * @param id The ID of the IOU to delete.
-     */
-    void deleteIOU(UUID id);
-
+    public IOUService(IOURepository iouRepository) {
+        this.iouRepository = iouRepository;
+    }
+    public List<IOU> getAllIOUs() {
+        return iouRepository.findAll();
+    }
+    public IOU getIOU(UUID id) {
+        return iouRepository.findById(id).orElseThrow();
+    }
+    public IOU createIOU(IOU iou) throws IllegalArgumentException, OptimisticLockingFailureException {
+        return iouRepository.save(iou);
+    }
+    public IOU updateIOU(UUID id, IOU updatedIOU) throws NoSuchElementException {
+        IOU iou = iouRepository.findById(id).orElseThrow();
+        iou.setBorrower(updatedIOU.getBorrower());
+        iou.setLender(updatedIOU.getLender());
+        iou.setAmount(updatedIOU.getAmount());
+        iou.setDateTime(updatedIOU.getDateTime());
+        return iouRepository.save(iou);
+    }
+    public void deleteIOU(UUID id) {
+        iouRepository.findById(id).orElseThrow();
+        iouRepository.deleteById(id);
+    }
 }
